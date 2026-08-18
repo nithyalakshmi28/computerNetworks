@@ -1,0 +1,69 @@
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NODES 5000000
+
+typedef struct {
+    int next[2];
+} TrieNode;
+
+TrieNode trie[MAX_NODES];
+int node_count;
+
+void init_trie() {
+    node_count = 1;
+    trie[0].next[0] = -1;
+    trie[0].next[1] = -1;
+}
+
+void insert(int num) {
+    int curr = 0;
+    for (int i = 30; i >= 0; i--) {
+        int bit = (num >> i) & 1;
+        if (trie[curr].next[bit] == -1) {
+            trie[node_count].next[0] = -1;
+            trie[node_count].next[1] = -1;
+            trie[curr].next[bit] = node_count;
+            node_count++;
+        }
+        curr = trie[curr].next[bit];
+    }
+}
+
+int get_max_xor(int num) {
+    int curr = 0;
+    int max_xor = 0;
+    for (int i = 30; i >= 0; i--) {
+        int bit = (num >> i) & 1;
+        int toggled_bit = 1 - bit; 
+        if (trie[curr].next[toggled_bit] != -1) {
+            max_xor |= (1 << i);
+            curr = trie[curr].next[toggled_bit];
+        } else {
+    
+            curr = trie[curr].next[bit];
+        }
+    }
+    return max_xor;
+}
+
+int findMaximumXOR(int* nums, int numsSize) {
+    if (numsSize < 2) return 0;
+    
+    init_trie();
+    
+
+    for (int i = 0; i < numsSize; i++) {
+        insert(nums[i]);
+    }
+ 
+    int absolute_max = 0;
+    for (int i = 0; i < numsSize; i++) {
+        int current_max = get_max_xor(nums[i]);
+        if (current_max > absolute_max) {
+            absolute_max = current_max;
+        }
+    }
+    
+    return absolute_max;
+}
